@@ -57,11 +57,11 @@ kramdown:
 
 # 评论系统
 # Disqus（https://disqus.com/）
-# disqus_username: faymi
+disqus_username: faymilin
 
 # Gitalk
 gitalk:
-  enable: true    #是否开启Gitalk评论
+  enable: false    #是否开启Gitalk评论
   clientID: 7e979d3e9e43d81cba49                            #生成的clientID
   clientSecret: 1fde88e2bc1851c89591b6129b4447fc222e87ab    #生成的clientSecret
   repo: faymi.github.io    #仓库名称 -> 存储你评论 issue 的 Github 仓库名
