@@ -3,7 +3,7 @@ title: Faymi Blog
 SEOTitle: 展鸿的博客 | Faymi Blog
 header-img: img/post-bg-desk.jpg
 email: faymi@gmail.com
-description: "Every failure is leading towards success."
+description: "Live as if you were to die tomorrow. Learn as if you were to live forever."
 keyword: "Faymi, Faymi Blog, 展鸿的博客, web, 前端, "
 url: "http://faymi.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
@@ -11,7 +11,7 @@ github_repo: "https://github.com/faymi/faymi.github.io.git" # you code repositor
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "Goals determine what you going to be!"
+sidebar-about-description: "When the night is darkest, dawn is nearest!"
 sidebar-avatar: /img/20684621.png      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
