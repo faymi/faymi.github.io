@@ -1,10 +1,10 @@
 # Site settings
 title: Faymi Blog
-SEOTitle: 大熊的博客 | Faymi Blog
+SEOTitle: 展鸿的博客 | Faymi Blog
 header-img: img/post-bg-desk.jpg
 email: faymi@gmail.com
 description: "Every failure is leading towards success."
-keyword: "Faymi, Faymi Blog, 大熊的博客, web, 前端, "
+keyword: "Faymi, Faymi Blog, 展鸿的博客, web, 前端, "
 url: "http://faymi.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
 github_repo: "https://github.com/faymi/faymi.github.io.git" # you code repository
