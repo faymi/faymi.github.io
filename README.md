@@ -1,6 +1,6 @@
 ## 个人博客
 
-- [查看博客戳这里 👆](http://blogs.eseeto.com)
+- [查看博客戳这里 👆](http://blog.eseeto.com)
 
 
 - 二维码扫描浏览
