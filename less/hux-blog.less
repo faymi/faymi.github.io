@@ -297,6 +297,10 @@ pre code{
 			color: rgba(255, 255, 255, 0.8);
 		}
 	}
+	.navbar-logo {
+		width: 60px;
+		height: 60px;
+	}
 	.nav {
 		li {
 			a {
@@ -326,6 +330,10 @@ pre code{
 			&:focus {
 				color: @white-faded;
 			}
+		}
+		.navbar-logo {
+			pointer-events: none;
+			filter: brightness(0) invert(100%);
 		}
 		.nav {
 			li {
@@ -370,6 +378,10 @@ pre code{
 				&:focus {
 					color: @brand-primary;
 				}
+			}
+			.navbar-logo {
+				pointer-events: none;
+				filter: brightness(0);
 			}
 			.nav {
 				li {
