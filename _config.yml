@@ -57,7 +57,7 @@ kramdown:
 
 # 评论系统
 # Disqus（https://disqus.com/）
-disqus_username: faymilin
+# disqus_username: faymilin
 
 # Gitalk
 gitalk:
@@ -69,6 +69,9 @@ gitalk:
   admin: faymi
   distractionFreeMode: true #是否启用类似FB的阴影遮罩
 
+
+# 来必力
+livere_uid: MTAyMC80NDEzNy8yMDY3Mg==
 
 # 统计
 
