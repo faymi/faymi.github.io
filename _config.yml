@@ -14,7 +14,7 @@ recordNum: 粤ICP备18042434号-1 # 备案号
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "When the night is darkest, dawn is nearest!"
-sidebar-avatar: /img/20684621.png      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: /img/avatar.png      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
