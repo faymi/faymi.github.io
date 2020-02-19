@@ -330,3 +330,11 @@ default:other::r-x
 ```
 sudo setfacl -mR default:group:docker:rwx /srv/gitlab
 ```
+
+### 参考
+
+- [Docker run reference](https://docs.docker.com/engine/reference/run/)
+- [GitLab Docker images](https://docs.gitlab.com/omnibus/docker/)
+- [Overview of Docker Compose](https://docs.docker.com/compose/)
+
+> 文中内容如有错误或纰漏，请指正！有兴趣的小伙伴可以一起相互讨论交流学习！
