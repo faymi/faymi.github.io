@@ -9,4 +9,3 @@
 
 ---
 
-*致谢: 该模板构建是从 [qiubaiying](https://github.com/qiubaiying/qiubaiying.github.io) fork 的, 感谢作者。*

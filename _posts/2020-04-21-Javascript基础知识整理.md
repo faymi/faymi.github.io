@@ -8,7 +8,7 @@ header-img: img/post-bg-js-version.jpg
 catalog: true
 tags:
     - Javascript
-    - 开发
+    - 面试
 ---
 
 # 基础知识集锦
