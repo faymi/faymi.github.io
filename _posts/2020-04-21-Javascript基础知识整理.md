@@ -1191,3 +1191,7 @@ CSRF(Cross-site request forgery), 即跨站请求伪造，通过伪装成受信�
     2. 浏览器拿到 token 值之后本地保存；
     3. 当浏览器再次发送网络请求的时候,就会将这个 token 值附带到参数中(或者通过Header头)发送给服务端；
     4. 服务端接收到浏览器的请求之后,会取出token值与保存在服务器的Session的token值做对比验证其正确性和有效期。
+
+## 数字证书认证机构的业务流程
+
+![image-20200426233554915](https://tva1.sinaimg.cn/large/007S8ZIlgy1ge7ldwvz54j30y40pykjl.jpg)
