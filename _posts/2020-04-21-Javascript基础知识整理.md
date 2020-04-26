@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Javascript基础知识整理
-subtitle:   Javascript/基础
+subtitle:   文档持续更新中...
 date:       2020-04-21
 author:     Faymi
 header-img: img/post-bg-js-version.jpg
@@ -1037,6 +1037,28 @@ if(top.location != self.location){
 - allow-scripts：允许执行脚本文件
 - allow-popups：允许浏览器打开新窗口进
 
+**c、设置`X-Frame-Options` HTTP响应头**
+
+用来给浏览器 指示允许一个页面 可否在 [`frame`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/frame), [`iframe`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/iframe), [`embed`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/embed) 或者 [`object`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/object) 中展现的标记。站点可以通过确保网站没有被嵌入到别人的站点里面，从而避免 [clickjacking](https://zh.wikipedia.org/wiki/clickjacking) 攻击。
+
+`deny`
+
+表示该页面不允许在 frame 中展示，即便是在相同域名的页面中嵌套也不允许。
+
+`sameorigin`
+
+表示该页面可以在相同域名页面的 frame 中展示。
+
+`allow-from *uri*`
+
+表示该页面可以在指定来源的 frame 中展示。
+
+配置nginx:
+
+```nginx
+add_header X-Frame-Options sameorigin always;
+```
+
 ####  XSS
 
 - **什么是 XSS**
@@ -1089,16 +1111,83 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
 - **XXS攻击的预防**
 
   - **预防存储型和反射型 XSS 攻击**
+
     - 改成纯前端渲染，把代码和数据分隔开：
       1. 浏览器先加载一个静态 HTML，此 HTML 中不包含任何跟业务相关的数据。
       2. 然后浏览器执行 HTML 中的 JavaScript。
       3. JavaScript 通过 Ajax 加载业务数据，调用 DOM API 更新到页面上。
     - 对 HTML 做充分转义。
+
   - **预防DOM型XSS攻击**
+
     - 在使用 `.innerHTML`、`.outerHTML`、`document.write()` 时要特别小心，不要把不可信的数据作为 HTML 插到页面上，而应尽量使用 `.textContent`、`.setAttribute()` 等。
     - 如果用 Vue/React 技术栈，并且不使用 `v-html`/`dangerouslySetInnerHTML` 功能，就在前端 render 阶段避免 `innerHTML`、`outerHTML` 的 XSS 隐患。
     - DOM 中的内联事件监听器，如 `location`、`onclick`、`onerror`、`onload`、`onmouseover` 等，`` 标签的 `href` 属性，JavaScript 的 `eval()`、`setTimeout()`、`setInterval()` 等，都能把字符串作为代码运行。如果不可信的数据拼接到字符串中传递给这些 API，很容易产生安全隐患，请务必避免。
+
   - **输入内容长度控制**
+
+  - [CSP](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy)：HTTP 响应头**`Content-Security-Policy`**允许站点管理者控制用户代理能够为指定的页面加载哪些资源。
+
+    CSP 允许在一个资源中指定多个策略, 包括通过 `Content-Security-Policy` 头, 以及 [`Content-Security-Policy-Report-Only`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only) 头，和 [`meta`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/meta) 组件。
+
+    示例: 禁用不安全的内联/动态执行, 只允许通过 https加载这些资源 (images, fonts, scripts, etc.)
+
+    ```nginx + html
+    // header
+    Content-Security-Policy: default-src https:
+    
+    // meta tag
+    <meta http-equiv="Content-Security-Policy" content="default-src https:">
+    ```
+
   - **其他**
+
     - Cookie设置HTTP-only: 禁止 JavaScript 读取某些敏感 Cookie，攻击者完成 XSS 注入后也无法窃取此 Cookie。
     - 验证码：防止脚本冒充用户提交危险操作。
+
+#### [CSRF](https://juejin.im/post/5df5bcea6fb9a016091def69#heading-74)
+
+- **什么是CSRF攻击？**
+
+CSRF(Cross-site request forgery), 即跨站请求伪造，通过伪装成受信任用户的请求来利用受信任的网站。指的是黑客诱导用户点击链接，打开黑客的网站，然后黑客利用用户**目前的登录状态**发起跨站请求。
+
+- **与XSS的区别：**
+  - 一般攻击发起点不在目标网站,而是被引导到第三方网站再发起攻击,这样目标网站就无法防止
+  - 攻击者不能获取到用户Cookies,包括子域名,而是利用Cookies的特性冒充用户身份进行攻击
+  - 通常是跨域攻击,因为攻击者更容易掌握第三方网站而不是只能利用目标网站自身漏洞
+  - 攻击方式包括图片,URL,CORS,表单,甚至直接嵌入第三方论坛,文章等等,难以追踪
+
+- **攻击方式：**
+
+  - 自动 GET 请求
+  - 自动 POST 请求
+  - 诱导点击发送 GET 请求。
+
+- 防范措施
+
+  - 利用cookie的SameSite属性。（问题：SameSite不支持子域名）
+
+    `SameSite`可以设置为三个值，`Strict`、`Lax`和`None`。
+
+    **a.** 在`Strict`模式下，浏览器完全禁止第三方请求携带Cookie。比如请求`sanyuan.com`网站只能在`sanyuan.com`域名当中请求才能携带 Cookie，在其他网站请求都不能。
+
+    **b.** 在`Lax`模式，就宽松一点了，但是只能在 `get 方法提交表单`况或者`a 标签发送 get 请求`的情况下可以携带 Cookie，其他情况均不能。
+
+    **c.** 在`None`模式下，也就是默认模式，请求会自动携带上 Cookie。
+
+  - 验证来源站点。
+
+    用到请求头中的两个字段: **Origin**和**Referer**。
+
+    其中，**Origin**只包含域名信息，而**Referer**包含了`具体`的 URL 路径，包含了当前请求页面的来源页面的地址，即表示当前页面是通过此来源页面里的链接进入的。
+
+    当然，这两者都是可以伪造的，通过 Ajax 中自定义请求头即可，安全性略差。
+
+  - 验证码、Token验证。
+
+    在前后端交互中携带一个有效验证“令牌”来防范CSRF攻击,大概流程:
+
+    1. 当用户首次登录成功之后, 服务端会生成一个唯一性和随机性的 token 值保存在服务器的Session或者其他缓存系统中，再将这个token值返回给浏览器；
+    2. 浏览器拿到 token 值之后本地保存；
+    3. 当浏览器再次发送网络请求的时候,就会将这个 token 值附带到参数中(或者通过Header头)发送给服务端；
+    4. 服务端接收到浏览器的请求之后,会取出token值与保存在服务器的Session的token值做对比验证其正确性和有效期。
