@@ -14,6 +14,7 @@ tags:
 # 基础知识集锦
 
 
+
 ## JS基础数据类型、复杂类型分别是什么以及其区别？null是对象吗？
 
 基础数据类型：boolean、string、number、null、undefined、symbol。
@@ -1359,13 +1360,13 @@ If-None-Match/E-tag、If-Modified-Since/Last-Modified、Cache-Control/Max-Age、
 
 jsonp解决跨域问题是一个比较古老的方案(实际中不推荐使用),这里做简单介绍(实际项目中如果要使用JSONP,一般会使用JQ等对JSONP进行了封装的类库来进行ajax请求)
 
-#### 实现原理
+##### 实现原理
 
 JSONP之所以能够用来解决跨域方案,主要是因为 `script` 脚本拥有跨域能力,而JSONP正是利用这一点来实现。具体原理如图
 
 ![16069ea85abd92fe](https://tva1.sinaimg.cn/large/007S8ZIlgy1ge9w9511qkj30p10jhmxw.jpg)
 
-#### 实现流程
+##### 实现流程
 
 JSONP的实现步骤大致如下(参考了来源中的文章)
 
@@ -1406,11 +1407,11 @@ JSONP的实现步骤大致如下(参考了来源中的文章)
 
 基于JSONP的实现原理,所以JSONP只能是“GET”请求,不能进行较为复杂的POST和其它请求,所以遇到那种情况,就得参考下面的CORS解决跨域了(所以如今它也基本被淘汰了)
 
-### CORS解决跨域问题
+#### [CORS](http://www.ruanyifeng.com/blog/2016/04/cors.html)解决跨域问题
 
 CORS的原理上文中已经介绍了，这里主要介绍的是，实际项目中，后端应该如何配置以解决问题(因为大量项目实践都是由后端进行解决的)，这里整理了一些常见的后端解决方案:
 
-#### Node.js后台配置(express框架)
+##### Node.js后台配置(express框架)
 
 Node.js的后台也相对来说比较简单就可以进行配置。只需用express如下配置:
 
@@ -1431,7 +1432,7 @@ app.all('*', function(req, res, next) {
 });
 ```
 
-#### JAVA后台配置
+##### JAVA后台配置
 
 JAVA后台配置只需要遵循如下步骤即可:
 
