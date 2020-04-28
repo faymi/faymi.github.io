@@ -1192,6 +1192,337 @@ CSRF(Cross-site request forgery), 即跨站请求伪造，通过伪装成受信�
     3. 当浏览器再次发送网络请求的时候,就会将这个 token 值附带到参数中(或者通过Header头)发送给服务端；
     4. 服务端接收到浏览器的请求之后,会取出token值与保存在服务器的Session的token值做对比验证其正确性和有效期。
 
+
+
 ## 数字证书认证机构的业务流程
 
 ![image-20200426233554915](https://tva1.sinaimg.cn/large/007S8ZIlgy1ge7ldwvz54j30y40pykjl.jpg)
+
+
+
+## HTTP1.0、HTTP1.1 和 HTTP2.0 的区别
+
+**HTTP的基本优化**
+
+影响一个 HTTP 网络请求的因素主要有两个：**带宽和延迟。**
+
+- **带宽：**如果说我们还停留在拨号上网的阶段，带宽可能会成为一个比较严重影响请求的问题，但是现在网络基础建设已经使得带宽得到极大的提升，我们不再会担心由带宽而影响网速，那么就只剩下延迟了。
+
+- **延迟：**
+
+- - 浏览器阻塞（HOL blocking）：浏览器会因为一些原因阻塞请求。浏览器对于同一个域名，同时只能有 4 个连接（这个根据浏览器内核不同可能会有所差异），超过浏览器最大连接数限制，后续请求就会被阻塞。
+  - DNS 查询（DNS Lookup）：浏览器需要知道目标服务器的 IP 才能建立连接。将域名解析为 IP 的这个系统就是 DNS。这个通常可以利用DNS缓存结果来达到减少这个时间的目的。
+  - 建立连接（Initial connection）：HTTP 是基于 TCP 协议的，浏览器最快也要在第三次握手时才能捎带 HTTP 请求报文，达到真正的建立连接，但是这些连接无法复用会导致每次请求都经历三次握手和慢启动。三次握手在高延迟的场景下影响较明显，慢启动则对文件类大请求影响较大。
+
+**HTTP1.0和HTTP1.1的一些区别**
+
+HTTP1.0最早在网页中使用是在1996年，那个时候只是使用一些较为简单的网页上和网络请求上，而HTTP1.1则在1999年才开始广泛应用于现在的各大浏览器网络请求中，同时HTTP1.1也是当前使用最为广泛的HTTP协议。 主要区别主要体现在：
+
+1. **缓存处理**，在HTTP1.0中主要使用header里的If-Modified-Since,Expires来做为缓存判断的标准，HTTP1.1则引入了更多的缓存控制策略例如Entity tag，If-Unmodified-Since, If-Match, If-None-Match等更多可供选择的缓存头来控制缓存策略。
+2. **带宽优化及网络连接的使用**，HTTP1.0中，存在一些浪费带宽的现象，例如客户端只是需要某个对象的一部分，而服务器却将整个对象送过来了，并且不支持断点续传功能，HTTP1.1则在请求头引入了range头域，它允许只请求资源的某个部分，即返回码是206（Partial Content），这样就方便了开发者自由的选择以便于充分利用带宽和连接。
+3. **错误通知的管理**，在HTTP1.1中新增了24个错误状态响应码，如409（Conflict）表示请求的资源与资源的当前状态发生冲突；410（Gone）表示服务器上的某个资源被永久性的删除。
+4. **Host头处理**，在HTTP1.0中认为每台服务器都绑定一个唯一的IP地址，因此，请求消息中的URL并没有传递主机名（hostname）。但随着虚拟主机技术的发展，在一台物理服务器上可以存在多个虚拟主机（Multi-homed Web Servers），并且它们共享一个IP地址。HTTP1.1的请求消息和响应消息都应支持Host头域，且请求消息中如果没有Host头域会报告一个错误（400 Bad Request）。
+5. **长连接**，HTTP 1.1支持长连接（PersistentConnection）和请求的流水线（Pipelining）处理，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟，在HTTP1.1中默认开启Connection： keep-alive，一定程度上弥补了HTTP1.0每次请求都要创建连接的缺点。
+
+**HTTP2.0和HTTP1.X相比的新特性**
+
+- **二进制分帧**（Binary Format），在应用层跟传送层之间增加了一个二进制分帧层，改进传输性能，实现低延迟和高吞吐量。HTTP1.x的解析是基于文本。基于文本协议的格式解析存在天然缺陷，文本的表现形式有多样性，要做到健壮性考虑的场景必然很多，二进制则不同，只认0和1的组合。
+- **多路复用**（MultiPlexing），即一个tcp/ip连接可以请求多个资源。即连接共享，即每一个request都是是用作连接共享机制的。一个request对应一个id，这样一个连接上可以有多个request，每个连接的request可以随机的混杂在一起，接收方可以根据request的 id将request再归属到各自不同的服务端请求里面。
+- **header压缩**，如上文中所言，对前面提到过HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小。
+- **服务端推送**（server push），服务端可以对客户端的一个请求发出多个响应，可以主动通知客户端。例如我的网页有一个sytle.css的请求，在客户端收到sytle.css数据的同时，服务端会将sytle.js的文件推送给客户端，当客户端再次尝试获取sytle.js时就可以直接从缓存中获取到，不用再发请求了。
+- **请求优先级**（如果流被赋予了优先级，它就会基于这个优先级来处理，由服务器决定需要多少资源来处理该请求。）
+
+**HTTP2.0的多路复用和HTTP1.X中的长连接复用有什么区别？**
+
+- HTTP/1.* 一次请求-响应，建立一个连接，用完关闭；每一个请求都要建立一个连接；
+- HTTP/1.1 Pipeling解决方式为，若干个请求排队串行化单线程处理，后面的请求等待前面请求的返回才能获得执行机会，一旦有某请求超时等，后续请求只能被阻塞，毫无办法，也就是人们常说的线头阻塞；
+- HTTP/2多个请求可同时在一个连接上并行执行。某个请求任务耗时严重，不会影响到其它连接的正常执行；
+
+
+
+## HTTP缓存
+
+#### 强缓存与弱缓存
+
+缓存可以简单的划分成两种类型：`强缓存`（`200 from cache`）与`协商缓存`（`304`）
+
+区别简述如下：
+
+- 强缓存（`200 from cache`）时，浏览器如果判断本地缓存未过期，就直接使用，无需发起http请求
+- 协商缓存（`304`）时，浏览器会向服务端发起http请求，然后服务端告诉浏览器文件未改变，让浏览器使用本地缓存
+
+对于协商缓存，使用`Ctrl + F5`强制刷新可以使得缓存无效
+
+但是对于强缓存，在未过期时，必须更新资源路径才能发起新的请求（更改了路径相当于是另一个资源了，这也是前端工程化中常用到的技巧）
+
+#### 缓存头部简述
+
+上述提到了强缓存和协商缓存，那它们是怎么区分的呢？
+
+答案是通过不同的http头部控制
+
+先看下这几个头部：
+
+```
+If-None-Match/E-tag、If-Modified-Since/Last-Modified、Cache-Control/Max-Age、Pragma/Expires
+```
+
+这些就是缓存中常用到的头部，这里不展开。仅列举下大致使用。
+
+属于强缓存控制的：
+
+```
+（http1.1）Cache-Control/Max-Age
+（http1.0）Pragma/Expires
+```
+
+注意：**`Max-Age`不是一个头部，它是`Cache-Control`头部的值**
+
+属于协商缓存控制的：
+
+```
+（http1.1）If-None-Match/E-tag
+（http1.0）If-Modified-Since/Last-Modified
+```
+
+可以看到，上述有提到`http1.1`和`http1.0`，这些不同的头部是属于不同http时期的
+
+再提一点，其实HTML页面中也有一个meta标签可以控制缓存方案-`Pragma`
+
+```html
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+```
+
+不过，这种方案还是比较少用到，因为支持情况不佳，譬如缓存代理服务器肯定不支持，所以不推荐
+
+#### 头部的区别
+
+首先明确，http的发展是从http1.0到http1.1
+
+而在http1.1中，出了一些新内容，弥补了http1.0的不足。
+
+**http1.0中的缓存控制：**
+
+- `Pragma`：严格来说，它不属于专门的缓存控制头部，但是它设置`no-cache`时可以让本地强缓存失效（属于编译控制，来实现特定的指令，主要是因为兼容http1.0，所以以前又被大量应用）
+- `Expires`：服务端配置的，属于强缓存，用来控制在规定的时间之前，浏览器不会发出请求，而是直接使用本地缓存，注意，Expires一般对应服务器端时间，如`Expires：Fri, 30 Oct 1998 14:19:41`
+- `If-Modified-Since/Last-Modified`：这两个是成对出现的，属于协商缓存的内容，其中浏览器的头部是`If-Modified-Since`，而服务端的是`Last-Modified`，它的作用是，在发起请求时，如果`If-Modified-Since`和`Last-Modified`匹配，那么代表服务器资源并未改变，因此服务端不会返回资源实体，而是只返回头部，通知浏览器可以使用本地缓存。`Last-Modified`，顾名思义，指的是文件最后的修改时间，而且只能精确到`1s`以内
+
+**http1.1中的缓存控制：**
+
+- `Cache-Control`：缓存控制头部，有no-cache、max-age等多种取值
+- `Max-Age`：服务端配置的，用来控制强缓存，在规定的时间之内，浏览器无需发出请求，直接使用本地缓存，注意，Max-Age是Cache-Control头部的值，不是独立的头部，譬如`Cache-Control: max-age=3600`，而且它值得是绝对时间，由浏览器自己计算
+- `If-None-Match/E-tag`：这两个是成对出现的，属于协商缓存的内容，其中浏览器的头部是`If-None-Match`，而服务端的是`E-tag`，同样，发出请求后，如果`If-None-Match`和`E-tag`匹配，则代表内容未变，通知浏览器使用本地缓存，和Last-Modified不同，E-tag更精确，它是类似于指纹一样的东西，基于`FileEtag INode Mtime Size`生成，也就是说，只要文件变，指纹就会变，而且没有1s精确度的限制。
+
+**Max-Age相比Expires？**
+
+`Expires`使用的是服务器端的时间
+
+但是有时候会有这样一种情况-客户端时间和服务端不同步
+
+那这样，可能就会出问题了，造成了浏览器本地的缓存无用或者一直无法过期
+
+所以一般http1.1后不推荐使用`Expires`
+
+而`Max-Age`使用的是客户端本地时间的计算，因此不会有这个问题
+
+因此推荐使用`Max-Age`。
+
+注意，如果同时启用了`Cache-Control`与`Expires`，`Cache-Control`优先级高。
+
+**E-tag相比Last-Modified？**
+
+`Last-Modified`：
+
+- 表明服务端的文件最后何时改变的
+- 它有一个缺陷就是只能精确到1s，
+- 然后还有一个问题就是有的服务端的文件会周期性的改变，导致缓存失效
+
+而`E-tag`：
+
+- 是一种指纹机制，代表文件相关指纹
+- 只有文件变才会变，也只要文件变就会变，
+- 也没有精确时间的限制，只要文件一遍，立马E-tag就不一样了
+
+如果同时带有`E-tag`和`Last-Modified`，服务端会优先检查`E-tag`
+
+各大缓存头部的整体关系如下图
+
+![16217a2d2b4b73d0](https://tva1.sinaimg.cn/large/007S8ZIlgy1ge9vo2jqvzj30om0ezq37.jpg)
+
+
+
+## [如何解决ajax跨域](https://juejin.im/post/5a3770e6518825127e7456a4)
+
+一般ajax跨域解决就是通过JSONP解决或者CORS解决,如以下:(注意，现在已经几乎不会再使用JSONP了，所以JSONP了解下即可)
+
+#### JSONP方式解决跨域问题
+
+jsonp解决跨域问题是一个比较古老的方案(实际中不推荐使用),这里做简单介绍(实际项目中如果要使用JSONP,一般会使用JQ等对JSONP进行了封装的类库来进行ajax请求)
+
+#### 实现原理
+
+JSONP之所以能够用来解决跨域方案,主要是因为 `script` 脚本拥有跨域能力,而JSONP正是利用这一点来实现。具体原理如图
+
+![16069ea85abd92fe](https://tva1.sinaimg.cn/large/007S8ZIlgy1ge9w9511qkj30p10jhmxw.jpg)
+
+#### 实现流程
+
+JSONP的实现步骤大致如下(参考了来源中的文章)
+
+- 客户端网页网页通过添加一个`script`元素，向服务器请求JSON数据，这种做法不受同源政策限制
+
+  ```javascript
+  function addScriptTag(src) {
+    var script = document.createElement('script');
+    script.setAttribute("type","text/javascript");
+    script.src = src;
+    document.body.appendChild(script);
+  }
+  
+  window.onload = function () {
+    addScriptTag('http://example.com/ip?callback=foo');
+  }
+  
+  function foo(data) {
+    console.log('response data: ' + JSON.stringify(data));
+  };
+  ```
+
+  请求时,接口地址是作为构建出的脚本标签的src的,这样,当脚本标签构建出来时,最终的src是接口返回的内容
+
+- 服务端对应的接口在返回参数外面添加函数包裹层
+
+  ```
+  foo({
+    "test": "testData"
+  });
+  ```
+
+- 由于`script`>元素请求的脚本，直接作为代码运行。这时，只要浏览器定义了foo函数，该函数就会立即调用。作为参数的JSON数据被视为JavaScript对象，而不是字符串，因此避免了使用JSON.parse的步骤。
+
+注意,一般的JSONP接口和普通接口返回数据是有区别的,所以接口如果要做JSONO兼容,需要进行判断是否有对应callback关键字参数,如果有则是JSONP请求,返回JSONP数据,否则返回普通数据
+
+**使用注意**
+
+基于JSONP的实现原理,所以JSONP只能是“GET”请求,不能进行较为复杂的POST和其它请求,所以遇到那种情况,就得参考下面的CORS解决跨域了(所以如今它也基本被淘汰了)
+
+### CORS解决跨域问题
+
+CORS的原理上文中已经介绍了，这里主要介绍的是，实际项目中，后端应该如何配置以解决问题(因为大量项目实践都是由后端进行解决的)，这里整理了一些常见的后端解决方案:
+
+#### Node.js后台配置(express框架)
+
+Node.js的后台也相对来说比较简单就可以进行配置。只需用express如下配置:
+
+```javascript
+app.all('*', function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+    res.header("X-Powered-By", ' 3.2.1')
+        //这段仅仅为了方便返回json而已
+    res.header("Content-Type", "application/json;charset=utf-8");
+    if(req.method == 'OPTIONS') {
+        //让options请求快速返回
+        res.sendStatus(200); 
+    } else { 
+        next(); 
+    }
+});
+```
+
+#### JAVA后台配置
+
+JAVA后台配置只需要遵循如下步骤即可:
+
+- 第一步:获取依赖jar包
+
+  下载 [cors-filter-1.7.jar](https://dailc.github.io/staticResource/blog/basicKnowledge/ajax/resource/cors-filter-2.4.jar), [java-property-utils-1.9.jar](https://dailc.github.io/staticResource/blog/basicKnowledge/ajax/resource/java-property-utils-1.9.1.jar) 这两个库文件放到lib目录下。(放到对应项目的webcontent/WEB-INF/lib/下)
+
+- 第二步:如果项目用了Maven构建的,请添加如下依赖到pom.xml中:(非maven请忽视)
+
+```xml
+<dependency>
+    <groupId>com.thetransactioncompany</groupId>
+    <artifactId>cors-filter</artifactId>
+    <version>[ version ]</version>
+</dependency>
+```
+
+其中版本应该是最新的稳定版本,CORS过滤器
+
+- 第三步:添加CORS配置到项目的Web.xml中( App/WEB-INF/web.xml)
+
+```xml
+<!-- 跨域配置-->    
+<filter>
+  <!-- The CORS filter with parameters -->
+  <filter-name>CORS</filter-name>
+  <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+
+  <!-- Note: All parameters are options, if omitted the CORS 
+             Filter will fall back to the respective default values.
+          -->
+  <init-param>
+    <param-name>cors.allowGenericHttpRequests</param-name>
+    <param-value>true</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.allowOrigin</param-name>
+    <param-value>*</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.allowSubdomains</param-name>
+    <param-value>false</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.supportedMethods</param-name>
+    <param-value>GET, HEAD, POST, OPTIONS</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.supportedHeaders</param-name>
+    <param-value>Accept, Origin, X-Requested-With, Content-Type, Last-Modified</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.exposedHeaders</param-name>
+    <!--这里可以添加一些自己的暴露Headers   -->
+    <param-value>X-Test-1, X-Test-2</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.supportsCredentials</param-name>
+    <param-value>true</param-value>
+  </init-param>
+
+  <init-param>
+    <param-name>cors.maxAge</param-name>
+    <param-value>3600</param-value>
+  </init-param>
+
+</filter>
+
+<filter-mapping>
+  <!-- CORS Filter mapping -->
+  <filter-name>CORS</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+请注意,以上配置文件请放到web.xml的前面,作为第一个filter存在(可以有多个filter的)
+
+- 第四步:可能的安全模块配置错误(注意，某些框架中-譬如公司私人框架，有安全模块的，有时候这些安全模块配置会影响跨域配置，这时候可以先尝试关闭它们)
+
+#### 代理请求方式解决接口跨域问题
+
+注意，由于接口代理是有代价的，所以这个仅是开发过程中进行的。
+
+与前面的方法不同，前面CORS是后端解决，而这个主要是前端对接口进行代理，也就是:
+
+- 前端ajax请求的是本地接口
+- 本地接口接收到请求后向实际的接口请求数据，然后再将信息返回给前端
+- 一般用node.js即可代理
