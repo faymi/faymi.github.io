@@ -1584,3 +1584,54 @@ rect.move(1, 1); // Outputs, 'Shape moved.'
 
 1. defer 是在 HTML 解析完之后才会执行，如果是多个，按照加载的顺序依次执行。`defer`脚本会在`DOMContentLoaded`和`load`事件之前执行。
 2. async 是在脚本加载完之后立即执行，如果是多个，执行顺序和加载顺序无关。`async`会在`load`事件之前执行，但并不能确保与`DOMContentLoaded`的执行先后顺序。
+
+
+
+## 为什么用transform写动画不用position top left？
+
+主要还是从浏览器渲染的性能方面考虑。
+
+1. **浏览器渲染过程**
+
+我们知道，浏览器中有JS引擎和渲染引擎，对于HTML页面的渲染就靠渲染引擎来完成。
+
+浏览器渲染主要包括Parse Html、Recalculate Style、Layout、Paint、Image Decode、Image Resize和Composite Layers等。相对应的中文表述就是：html解析、查找并计算样式、排布、绘制、图片解码、图片大小设置、合并图层并输出页面到屏幕。浏览器最终渲染出来的页面，跟Photoshop有点类似，是由多个图层合并而来。
+
+2. **transform的原理**
+
+transform是通过创建一个RenderLayers合成层，拥有独立的GraphicsLayers。每一个GraphicsLayers都有一个Graphics Context，其对应的RenderLayers会paint进Graphics Context中。合成器（Compositor）最终会负责将由Graphics Context输出的位图合并成最终屏幕展示的图案。
+
+满足如下条件的RenderLayers，会被认为是一个独立的合成层：
+
+- 有3D或者perspective transform的CSS属性的层
+- video元素的层
+- canvas元素的层
+- flash
+- 对opacity和transform应用了CSS动画的层
+- 使用了CSS滤镜（filters）的层
+- 有合成层后代的层
+- 同合成层重叠，且在该合成层上面（z-index）渲染的层
+
+如果RenderLayer是一个合成层，那么它有属于它自己的单独的GraphicsLayer，否则它和它的最近的拥有GraphicsLayer的父layer共用一个GraphicsLayer。
+
+由此可见，transform发生在Composite Layer这一步，它所引起的paint也只是发生在**单独的GraphicsLayer**中，并**不会引起整个页面的回流重绘**。
+
+3. **GPU**
+
+我们经常会听到GPU会加速渲染，那GPU在这里又扮演什么角色呢？
+
+前面说到，合成器会负责将层合成绘制为最终的屏幕画面。在硬件加速体系结构，合成由GPU负责。在chrome浏览器多进程模型中，有一个专门的进程来负责传递Render进程的命令，即GPU进程。Render进程和GPU进程是通过共享内存传递的。
+
+Render进程可以快速的将命令发给命令缓冲区，并且返回到CPU密集的render活动中，留给GPU进程去处理这些命令。我们可以充分利用多内核机器上的GPU进程和CPU进程。这也是为什么GPU会加速渲染，使transform渲染速度更快的又一原因。
+
+4. **margin top/left**
+
+**`position`**属性用于指定一个元素在文档中的定位方式。[`top`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/top)，[`right`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/right)，[`bottom`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/bottom) 和 [`left`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/left) 属性则决定了该元素的最终位置。简言之，可以改变元素的位移。在浏览器页面渲染的时候，`top/left`可以控制元素的位置，也就是说，改变`top/left`，就会改变render tree的结构，必定会**引起页面layout回流和repaint重绘**。
+
+因此，从浏览器性能考虑，transform会比`top/left`更省时间。
+
+5. **transform的局限性**
+
+transform实际上也是用到了GPU加速，也就是说占用了内存。由此可见创建GraphicsLayer，虽然节省了layout，paint阶段，但Layer创建的越多，占用内存就会越大，而过多的渲染开销会超过性能的改善。
+
+因此，当且仅当需要的时候，才会为元素创建渲染层。
