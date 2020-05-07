@@ -459,7 +459,7 @@ export default function compose(...funcs) {  
 
 ## webpack中loaders作用？plugins和loaders区别？是否写过webpack插件
 
-![img](https://user-gold-cdn.xitu.io/2020/4/18/1718c523bed13737?imageslim)
+![image-20200507114606676](https://tva1.sinaimg.cn/large/007S8ZIlgy1gejqor7p1sj317x0u0u0x.jpg)
 
 
 
@@ -1526,4 +1526,61 @@ JAVA后台配置只需要遵循如下步骤即可:
 
 - 前端ajax请求的是本地接口
 - 本地接口接收到请求后向实际的接口请求数据，然后再将信息返回给前端
-- 一般用node.js即可代理
+- 一般用node.js、nginx即可代理
+
+
+
+## JS 继承
+
+#### 组合方式实现继承
+
+运用`Object.create(proto)`与`call`实现:
+
+> **`Object.create(proto[, propertiesObject])`**方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__。
+
+```js
+// Shape - 父类(superclass)
+function Shape() {
+  this.x = 0;
+  this.y = 0;
+}
+
+// 父类的方法
+Shape.prototype.move = function(x, y) {
+  this.x += x;
+  this.y += y;
+  console.info('Shape moved.');
+};
+
+// Rectangle - 子类(subclass)
+function Rectangle() {
+  Shape.call(this); // call super constructor.
+}
+
+// 子类续承父类
+Rectangle.prototype = Object.create(Shape.prototype);
+Rectangle.prototype.constructor = Rectangle;
+
+var rect = new Rectangle();
+
+console.log('Is rect an instance of Rectangle?',
+rect instanceof Rectangle); // true
+console.log('Is rect an instance of Shape?',
+rect instanceof Shape); // true
+rect.move(1, 1); // Outputs, 'Shape moved.'
+```
+
+
+
+## 异步加载
+
+#### 异步加载的方式
+
+1. 动态脚本加载
+2. defer
+3. async
+
+#### 异步加载的区别
+
+1. defer 是在 HTML 解析完之后才会执行，如果是多个，按照加载的顺序依次执行。`defer`脚本会在`DOMContentLoaded`和`load`事件之前执行。
+2. async 是在脚本加载完之后立即执行，如果是多个，执行顺序和加载顺序无关。`async`会在`load`事件之前执行，但并不能确保与`DOMContentLoaded`的执行先后顺序。
