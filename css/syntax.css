@@ -1,6 +1,12 @@
 /* to make lines scroll instead of wrap */
 /* from http://stackoverflow.com/a/23393920 */
 
+/* gitalk css */
+.markdown-body .highlight pre, .markdown-body pre {
+  background-color: #f5f5f5 !important;
+}
+
+
 .highlight pre code * {
   /* this sets all children inside to nowrap */
   white-space: nowrap;
