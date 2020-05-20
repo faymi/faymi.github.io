@@ -307,7 +307,7 @@ BFC 是 Block Formatting Context 的缩写，即块格式化上下文。
 
    
 
-   ![img](https://user-gold-cdn.xitu.io/2019/6/2/16b1775cc7bbe073?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+   ![img](https://user-gold-cdn.xitu.io/2019/6/2/16b1775cc7bbe073)
 
    
 
@@ -325,7 +325,7 @@ BFC 是 Block Formatting Context 的缩写，即块格式化上下文。
 
    
 
-   ![img](https://user-gold-cdn.xitu.io/2019/6/2/16b1775cc7f30da0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+   ![img](https://user-gold-cdn.xitu.io/2019/6/2/16b1775cc7f30da0)
 
    
 
@@ -425,6 +425,8 @@ function deepClone(obj, hash = new WeakMap()) { //递归拷贝
 
 [package.json 中的 peerDependencies](https://javascript.ruanyifeng.com/nodejs/packagejson.html#toc3)
 
+[探讨npm依赖管理之peerDependencies](https://www.cnblogs.com/wonyun/p/9692476.html)
+
 
 
 ## React的虚拟DOM优势？
@@ -452,6 +454,52 @@ export default function compose(...funcs) {  
     return funcs[0]  
   }  
 	return funcs.reduce((a, b) => (...args) => a(b(...args)))
+}
+```
+
+#### koa compose的实现
+
+前置条件：中间件注册
+
+```js
+use(fn) {
+  this.middleware.push(fn);
+  return this;
+}
+```
+
+实现：
+
+```js
+function compose (middleware) {
+  if (!Array.isArray(middleware)) throw new TypeError('Middleware stack must be an array!')
+  for (const fn of middleware) {
+    if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!')
+  }
+
+  /**
+   * @param {Object} context
+   * @return {Promise}
+   * @api public
+   */
+
+  return function (context, next) {
+    let index = -1
+    return dispatch(0)
+    function dispatch (i) {
+      if (i <= index) return Promise.reject(new Error('next() called multiple times'))
+      index = i
+      let fn = middleware[i]
+      if (i === middleware.length) fn = next
+      if (!fn) return Promise.resolve()
+      try {
+        // 利用Promise包装中间件
+        return Promise.resolve(fn(context, dispatch.bind(null, i + 1))); 
+      } catch (err) {
+        return Promise.reject(err)
+      }
+    }
+  }
 }
 ```
 
