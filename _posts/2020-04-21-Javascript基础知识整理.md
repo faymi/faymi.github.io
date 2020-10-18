@@ -172,7 +172,7 @@ function debounce(func, wait, immediate = true) {
 
 执行上下文创建过程中，需要做以下几件事:
 
-1. 创建变量对象：首先初始化函数的参数arguments，提升函数声明和变量声明。
+1. 创建[变量对象](https://github.com/mqyqingfeng/Blog/issues/5)：首先初始化函数的参数arguments，提升函数声明和变量声明。
 2. 创建作用域链（Scope Chain）：在执行期上下文的创建阶段，作用域链是在变量对象之后创建的。
 3. 确定this的值，即 ResolveThisBinding。
 
@@ -265,11 +265,20 @@ BFC 是 Block Formatting Context 的缩写，即块格式化上下文。
 
 #### 如何创建BFC
 
-- 根元素
-- 浮动元素（float 属性不为 none）
-- position 为 absolute 或 fixed
-- overflow 不为 visible 的块元素
-- display 为 inline-block, table-cell, table-caption
+- 根元素(`<html>`)
+- 浮动元素（元素的 [`float`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/float) 不是 `none`）
+- [`overflow`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/overflow) 值不为 `visible` 的块元素
+- 绝对定位元素（元素的 [`position`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/position) 为 `absolute` 或 `fixed`）
+- [`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display) 值为 `flow-root` 的元素，无副作用创建BFC。兼容处理：`.wrapper{display: flow-root;} @supports not (display:flow-root) { .wrapper::after { content: ''; display: table; clear:both; } }`
+- 行内块元素（元素的 [`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display) 为 `inline-block`）
+- 表格单元格（元素的 [`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)为 `table-cell`，HTML表格单元格默认为该值）
+- 表格标题（元素的 [`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display) 为 `table-caption`，HTML表格标题默认为该值）
+- 匿名表格单元格元素（元素的 [`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)为 `table`、 `table-row`、 `table-row-group`、 `table-header-group`、 `table-footer-group`（分别是HTML table、row、tbody、thead、tfoot的默认属性）或 `inline-table`）
+- [`contain`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/contain) 值为 `layout`、`content`或 paint 的元素
+- 弹性元素（[`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)为 `flex` 或 `inline-flex`元素的直接子元素）
+- 网格元素（[`display`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)为 `grid` 或 `inline-grid` 元素的直接子元素）
+- 多列容器（元素的 [`column-count`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/column-count) 或 [`column-width`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/column-width) 不为 `auto`包括 ` column-count` 为 `1`）
+- `column-span` 为 `all` 的元素始终会创建一个新的BFC，即使该元素没有包裹在一个多列容器中（[标准变更](https://github.com/w3c/csswg-drafts/commit/a8634b96900279916bd6c505fda88dda71d8ec51)，[Chrome bug](https://bugs.chromium.org/p/chromium/issues/detail?id=709362)）。
 
 #### BFC的应用
 
@@ -277,7 +286,7 @@ BFC 是 Block Formatting Context 的缩写，即块格式化上下文。
 
    根据BFC规则，同一个BFC内的两个两个相邻Box的 `margin` 会发生重叠，因此我们可以在div外面再嵌套一层容器，并且触发该容器生成一个 BFC，即产生两个 BFC，自然也就不会再发生 `margin` 重叠
 
-2. 清除内部浮动
+2. 清除内部浮动（浮动元素的父级设置BFC规则）
 
 3. 自适应多栏布局
 
@@ -695,6 +704,55 @@ arr = null;
 5. **文件限制**
 
    Worker 线程无法读取本地文件，即不能打开本机的文件系统（`file://`），它所加载的脚本，必须来自网络。
+
+**构造函数**
+
+- [`Worker()`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/Worker)
+
+  创建一个专用Web worker，它只执行URL指定的脚本。Worker不指定URL时，而由使用[Blob](https://developer.mozilla.org/zh-CN/docs/Web/API/Blob)创建。
+
+**属性**
+
+*继承*父对象*[`EventTarget`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget) 的属性，以及实现对象 [`AbstractWorker`](https://developer.mozilla.org/zh-CN/docs/Web/API/AbstractWorker)的属性。*
+
+**事件句柄**
+
+- [`AbstractWorker.onerror`](https://developer.mozilla.org/zh-CN/docs/Web/API/AbstractWorker/onerror)
+
+  当[`ErrorEvent`](https://developer.mozilla.org/zh-CN/docs/Web/API/ErrorEvent) 类型的事件冒泡到 worker 时，事件监听函数 [`EventListener`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventListener) 被调用. 它继承于 [`AbstractWorker`](https://developer.mozilla.org/zh-CN/docs/Web/API/AbstractWorker).
+
+- [`Worker.onmessage`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/onmessage)
+
+  当[`MessageEvent`](https://developer.mozilla.org/zh-CN/docs/Web/API/MessageEvent)类型的事件冒泡到 worker 时，事件监听函数 [`EventListener`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventListener) 被调用. 例如，一个消息通过 [`DedicatedWorkerGlobalScope.postMessage`](https://developer.mozilla.org/zh-CN/docs/Web/API/DedicatedWorkerGlobalScope/postMessage)，从执行者发送到父页面对象，消息保存在事件对象的 [`data`](https://developer.mozilla.org/zh-CN/docs/Web/API/MessageEvent/data) 属性中.
+
+- [`Worker.onmessageerror`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/onmessageerror)
+
+  当`messageerror` 类型的事件发生时，对应的[`EventHandler`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventHandler) 代码被调用。
+
+**方法**
+
+*继承*父对象*[`EventTarget`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget) 的方法，以及实现对象 [`AbstractWorker`](https://developer.mozilla.org/zh-CN/docs/Web/API/AbstractWorker)的方法。*
+
+- [`Worker.postMessage()`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/postMessage)
+
+  发送一条消息到最近的外层对象，消息可由任何 JavaScript 对象组成。
+
+- [`Worker.terminate()`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/terminate)
+
+  立即终止 worker。该方法不会给 worker 留下任何完成操作的机会；就是简单的立即停止。Service Woker 不支持这个方法。
+
+通过构造函数 [`Worker()`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/Worker) 创建了一个 [`Worker`](https://developer.mozilla.org/zh-CN/docs/Web/API/Worker) 对象。
+
+```js
+var myWorker = new Worker('worker.js'); 
+var first = document.querySelector('#number1');
+var second = document.querySelector('#number2');
+
+first.onchange = function() {
+  myWorker.postMessage([first.value,second.value]);
+  console.log('Message posted to worker');
+}
+```
 
 
 
@@ -1136,7 +1194,7 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
     1. 攻击者构造出特殊的 URL，其中包含恶意代码。
     2. 用户打开带有恶意代码的 URL 时，网站服务端将恶意代码从 URL 中取出，拼接在 HTML 中返回给浏览器。
     3. 用户浏览器接收到响应后解析执行，混在其中的恶意代码也被执行。
-    4. 恶意代码窃取用户数据并发送到攻击者的网站，或者冒充用户的行为，调用目标网站接口执行攻击者指定的操作。
+    4. 恶意代码窃;取用户数据并发送到攻击者的网站，或者冒充用户的行为，调用目标网站接口执行攻击者指定的操作。
 
     反射型 XSS 跟存储型 XSS 的区别是：存储型 XSS 的恶意代码存在数据库里，反射型 XSS 的恶意代码存在 URL 里。
 
@@ -1171,7 +1229,7 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
 
     - 在使用 `.innerHTML`、`.outerHTML`、`document.write()` 时要特别小心，不要把不可信的数据作为 HTML 插到页面上，而应尽量使用 `.textContent`、`.setAttribute()` 等。
     - 如果用 Vue/React 技术栈，并且不使用 `v-html`/`dangerouslySetInnerHTML` 功能，就在前端 render 阶段避免 `innerHTML`、`outerHTML` 的 XSS 隐患。
-    - DOM 中的内联事件监听器，如 `location`、`onclick`、`onerror`、`onload`、`onmouseover` 等，`` 标签的 `href` 属性，JavaScript 的 `eval()`、`setTimeout()`、`setInterval()` 等，都能把字符串作为代码运行。如果不可信的数据拼接到字符串中传递给这些 API，很容易产生安全隐患，请务必避免。
+    - DOM 中的内联事件监听器，如 `location`、`onclick`、`onerror`、`onload`、`onmouseover` 等，标签的 `href` 属性，JavaScript 的 `eval()`、`setTimeout()`、`setInterval()` 等，都能把字符串作为代码运行。如果不可信的数据拼接到字符串中传递给这些 API，很容易产生安全隐患，请务必避免。
 
   - **输入内容长度控制**
 
@@ -1181,7 +1239,7 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
 
     示例: 禁用不安全的内联/动态执行, 只允许通过 https加载这些资源 (images, fonts, scripts, etc.)
 
-    ```nginx + html
+    ```nginx
     // header
     Content-Security-Policy: default-src https:
     
@@ -1191,7 +1249,12 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
 
   - **其他**
 
-    - Cookie设置HTTP-only: 禁止 JavaScript 读取某些敏感 Cookie，攻击者完成 XSS 注入后也无法窃取此 Cookie。
+    - Cookie设置**Secure**（Cookie只应通过被HTTPS协议加密过的请求发送给服务端）、**HttpOnly**（通过JavaScript的 [`Document.cookie`](https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie) API无法访问带有 `HttpOnly` 标记的Cookie，它们只应该发送给服务端）: 禁止 JavaScript 读取某些敏感 Cookie，攻击者完成 XSS 注入后也无法窃取此 Cookie。
+
+      ```html
+      Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
+      ```
+
     - 验证码：防止脚本冒充用户提交危险操作。
 
 #### [CSRF](https://juejin.im/post/5df5bcea6fb9a016091def69#heading-74)
@@ -1201,6 +1264,7 @@ XSS 的本质是：恶意代码未经过滤，与网站正常的代码混在一�
 CSRF(Cross-site request forgery), 即跨站请求伪造，通过伪装成受信任用户的请求来利用受信任的网站。指的是黑客诱导用户点击链接，打开黑客的网站，然后黑客利用用户**目前的登录状态**发起跨站请求。
 
 - **与XSS的区别：**
+
   - 一般攻击发起点不在目标网站,而是被引导到第三方网站再发起攻击,这样目标网站就无法防止
   - 攻击者不能获取到用户Cookies,包括子域名,而是利用Cookies的特性冒充用户身份进行攻击
   - 通常是跨域攻击,因为攻击者更容易掌握第三方网站而不是只能利用目标网站自身漏洞
@@ -1214,7 +1278,7 @@ CSRF(Cross-site request forgery), 即跨站请求伪造，通过伪装成受信�
 
 - 防范措施
 
-  - 利用cookie的SameSite属性。（问题：SameSite不支持子域名）
+  - 利用cookie的SameSite属性。（Cookie允许服务器要求某个cookie在跨站请求时不会被发送。问题：SameSite不支持子域名）
 
     `SameSite`可以设置为三个值，`Strict`、`Lax`和`None`。
 
@@ -1683,3 +1747,99 @@ Render进程可以快速的将命令发给命令缓冲区，并且返回到CPU�
 transform实际上也是用到了GPU加速，也就是说占用了内存。由此可见创建GraphicsLayer，虽然节省了layout，paint阶段，但Layer创建的越多，占用内存就会越大，而过多的渲染开销会超过性能的改善。
 
 因此，当且仅当需要的时候，才会为元素创建渲染层。
+
+
+
+## [CSS实现宽高等比例自适应矩形](https://juejin.im/post/5b0784566fb9a07abd0e14ae#heading-0)
+
+#### 概述
+
+今天遇到一个很有趣的问题：**「如何实现一个宽度自适应，高度为宽度的一半的矩形」**。
+
+经过搜索引擎的筛选和自己的反复试验,发现使用`padding-bottom`是最完美的解决方案。
+
+#### 解决方案
+
+首先我们要明白，`padding-top/bottom`和`margin-top/bottom`都是**相对于父元素的宽度**来计算的，我们可以利用这一属性来实现我们的需求。
+
+代码如下：
+
+```css
+<div class="scale"></div>
+.scale {
+  width: 100%;
+  height: 0;
+  padding-bottom: 50%;
+}
+```
+
+这其中的关键点就是`height: 0;`和`padding-bottom: 50%;`。
+
+我们将元素的高度由`padding`撑开，由于`padding`是根据父元素宽度计算的，所以高度也就变成了相对父元素宽度，同时要将`height`设置为 0，这是为了将元素高度完全交给`padding`负责。
+
+最后`padding-bottom`的值设为`width`的值一半，就可以实现高度是宽度的一半且自适应啦。
+
+#### 改进
+
+光是这样写还是不够的，因为元素的`height`为 0，导致该元素里面再有子元素的时候，就无法正常设置高度。所以我们需要用到`position: absolute;`。代码如下：
+
+```css
+<div class="scale">
+    <div class="item">
+        这里是所有子元素的容器
+    </div>
+</div>
+.scale {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative; //
+}
+
+.item {
+  width: 100%;
+  height: 100%;
+  background-color: aquamarine;
+  position: absolute; //
+}
+```
+
+#### 继续改进
+
+解决了子元素的问题，那么我们再来看看元素本身。由于我们一开始的需求是宽高比 `2:1`,这种比较好实现，但是后来需求又想要 `16:9` 的宽高比，而且宽度不是 100%，那这样计算 `padding-bottom`的时候就很麻烦了。如何解决呢？
+
+这时候我们需要在外层再套一个父元素，将宽度的控制交给这个父元素来做。
+
+代码如下：
+
+```html
+<body>
+    <div class="box">
+        <div class="scale">
+            <div class="item">
+                item
+            </div>
+        </div>
+    </div>
+</body>
+/* box 用来控制宽度 */
+.box {
+  width: 80%;
+}
+/* scale 用来实现宽高等比例 */
+.scale {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+/* item 用来放置全部的子元素 */
+.item {
+  width: 100%;
+  height: 100%;
+  background-color: aquamarine;
+  position: absolute;
+}
+```
+
+如此，就可以完美解决。
